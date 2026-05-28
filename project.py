@@ -4,7 +4,7 @@ import pandas as pd
 st.set_page_config(page_title="툴 관리 시스템 달력 테스트", layout="centered")
 
 st.title("📱 툴 정보 수정 및 달력 시스템 테스트")
-st.write("현장에서 날짜를 바꿀 때 달력창이 어떻게 뜨는지 직접 눌러서 테스트해 보세요!")
+st.write("4PART 현장에서 스마트폰으로 지정해주세요")
 
 st.markdown("---")
 
