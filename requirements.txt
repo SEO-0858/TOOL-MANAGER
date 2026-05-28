@@ -1,0 +1,6 @@
+streamlit
+qrcode
+pillow
+pymongo
+certifi
+pandas
