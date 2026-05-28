@@ -7,7 +7,7 @@ import io
 
 # --- 1. 가장 안정적인 MongoDB Atlas 공식 표준 주소로 재설정 ---
 # Streamlit 클라우드 서버는 회사 방화벽을 안 받으므로 기본 srv 주소가 훨씬 안정적입니다.
-MONGO_URI = "MONGO_URI" = "mongodb+srv://sspon1270_db_user:wXA7NGCMjjTiTG5w@cluster0.1ectnsv.mongodb.net/SmartFactory?retryWrites=true&w=majority&appName=Cluster0"
+MONGO_URI = "MONGO_URI = "mongodb+srv://sspon1270_db_user:wXA7NGCMjjTiTG5w@cluster0.1ectnsv.mongodb.net/SmartFactory?retryWrites=true&w=majority&appName=Cluster0"
 
 @st.cache_resource
 def get_mongo_client():
