@@ -2,10 +2,10 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="종합 툴 관리 대시보드", layout="wide")
+st.set_page_config(page_title="다이아몬드 툴 관리 시스템", layout="wide")
 
-st.title("🏭 다이아몬드 툴 종합 관리 대시보드 (검색/필터 기능)")
-st.write("데이터가 쌓였을 때 사무실과 현장에서 어떻게 검색하고 관리하는지 확인해 보세요.")
+st.title("🏭 4PART (검색/필터 기능)")
+st.write("사무실및 현장관리용.")
 
 st.markdown("---")
 
