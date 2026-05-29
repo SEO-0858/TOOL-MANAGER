@@ -4,3 +4,4 @@ pillow
 pymongo
 certifi
 pandas
+streamlit-autorefresh
