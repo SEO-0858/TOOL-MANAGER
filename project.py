@@ -16,8 +16,10 @@ st.write("사무실 및 현장관리용 (실시간 클라우드 DB 양방향 연
 st.markdown("---")
 
 
-# 📌 이 주소로 완벽하게 복사해서 붙여넣으세요!
-MONGO_URI = "mongodb+srv://sspon1270_db_user:wXA7NGCMjjTiTG5w@cluster0.lectnsv.mongodb.net/tool_manager?appName=Cluster0"
+
+
+
+MONGO_URI = "mongodb://sspon1270_db_user:wXA7NGCMjjTiTG5w@52.78.114.238:27017/tool_manager?ssl=true&authSource=admin&retryWrites=true&w=majority"
 # 캐시 없이 매번 함수가 실행될 때마다 실시간으로 DB에 직접 꽂히도록 연결 설정
 def get_mongo_collection():
     client = MongoClient(MONGO_URI)
