@@ -21,10 +21,8 @@ st.title("🏭 4PART (검색/필터 기능)")
 st.write("사무실 및 현장관리용 (실시간 클라우드 DB 양방향 연동)")
 st.markdown("---")
 
-# =================================================================
-# 🔌 [MongoDB Atlas 연결 설정]
-# =================================================================
-MONGO_URI = "mongodb+srv://sspon1270_db_user:wXA7NGCMjjTiTG5w@cluster0.lectnsv.mongodb.net/tool_manager"
+
+MONGO_URI = "mongodb+srv://sspon1270_db_user:wXA7NGCMjjTiTG5w@cluster0.lectnsv.mongodb.net/tool_manager?appName=Cluster0"
 
 # 에러로 인해 변수가 미정의되는 것을 방지하기 위해 초기화
 collection = None
