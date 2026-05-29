@@ -19,8 +19,9 @@ st.markdown("---")
 # 🔌 [MongoDB Atlas 연결 설정]
 # 반드시 회원님의 실제 MongoDB 연결 주소(ID, PW 포함)를 입력하세요.
 # 예: "mongodb+srv://사용자ID:비밀번호@cluster0...mongodb.net/..."
-# =================================================================
-MONGO_URI = "mongodb+srv://sspon1270_db_user:wXA7NGCMjjTiTG5w@cluster0.lectnsv.mongodb.net/?retryWrites=true&w=majority"
+
+# 📌 기존 주소 대신 아래 코드를 그대로 복사해서 붙여넣으세요!
+MONGO_URI = "mongodb+srv://sspon1270_db_user:wXA7NGCMjjTiTG5w@cluster0.lectnsv.mongodb.net/tool_manager"
 
 # 캐시 없이 매번 함수가 실행될 때마다 실시간으로 DB에 직접 꽂히도록 연결 설정
 def get_mongo_collection():
