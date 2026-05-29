@@ -2,10 +2,16 @@ import streamlit as st
 import pandas as pd
 from pymongo import MongoClient
 from streamlit_autorefresh import st_autorefresh
+import os
+
+# 💡 [DNS 에러 방지] 주소를 해석하지 못하는 버그를 막기 위해 강제 로드 시도
+try:
+    import dns.resolver
+except ImportError:
+    pass
 
 # =================================================================
 # 🚨 [중요 설정] 5초마다 자동으로 화면을 새로고침하여 양방향 동기화 유지
-# 컴퓨터든 핸드폰이든 가만히 있어도 5초마다 DB 최신 상태를 읽어옵니다.
 # =================================================================
 st_autorefresh(interval=5000, limit=9999, key="db_sync_counter")
 
@@ -17,30 +23,35 @@ st.markdown("---")
 
 # =================================================================
 # 🔌 [MongoDB Atlas 연결 설정]
-# 반드시 회원님의 실제 MongoDB 연결 주소(ID, PW 포함)를 입력하세요.
-# 예: "mongodb+srv://사용자ID:비밀번호@cluster0...mongodb.net/..."
-
-# 📌 기존 주소 대신 아래 코드를 그대로 복사해서 붙여넣으세요!
+# =================================================================
 MONGO_URI = "mongodb+srv://sspon1270_db_user:wXA7NGCMjjTiTG5w@cluster0.lectnsv.mongodb.net/tool_manager"
 
-# 캐시 없이 매번 함수가 실행될 때마다 실시간으로 DB에 직접 꽂히도록 연결 설정
+# 에러로 인해 변수가 미정의되는 것을 방지하기 위해 초기화
+collection = None
+
 def get_mongo_collection():
-    client = MongoClient(MONGO_URI)
+    # 연결 타임아웃을 5초로 제한하여 무한 대기 방지
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
     db = client["tool_manager"]  # 데이터베이스 이름
     return db["tools"]           # 컬렉션(테이블) 이름
 
 try:
     collection = get_mongo_collection()
+    # 실제로 연결이 잘 붙는지 핑을 때려 확인해봅니다.
+    collection.database.client.admin.command('ping')
 except Exception as e:
     st.error(f"❌ 데이터베이스 연결 실패: {e}")
+    st.info("💡 팁: 컴퓨터가 회사 보안망(인터넷 차단) 환경이거나, 파이썬 환경에 dnspython 패키지가 없는 경우 발생할 수 있습니다.")
 
 # --- DB에서 최신 데이터를 실시간으로 가져오는 함수 ---
 def load_live_data():
+    # 위의 try문에서 collection 연결이 실패했다면 빈 데이터프레임 반환
+    if collection is None:
+        return pd.DataFrame()
+        
     try:
-        # 캐시를 쓰지 않고 무조건 실시간으로 MongoDB에서 전체 데이터를 긁어옴
         live_data = list(collection.find({}, {"_id": 0}))
         
-        # 만약 DB가 완전히 비어있다면, 시스템이 정상 작동하도록 샘플 초기 데이터를 DB에 강제 주입
         if not live_data:
             sample_data = [
                 {"툴ID": "4P260529-200161", "툴종류": "#200전착", "상태": "사용중", "입고날짜": "2026-05-29", "장착기계": "#3호기", "가공제품": "하우징A", "가공수량": 150},
@@ -77,27 +88,29 @@ with col1:
     qty = st.number_input("🔢 가공 수량 (개)", min_value=0, value=150)
     
     if st.button("🚀 설정된 값으로 DB 업데이트"):
-        new_row = {
-            "툴ID": target_id, 
-            "툴종류": "#200전착" if "20" in target_id else "#400레진", 
-            "상태": tool_status, 
-            "입고날짜": str(in_date), 
-            "장착기계": machine_num, 
-            "가공제품": product_name, 
-            "가공수량": qty
-        }
-        
-        try:
-            # 💡 [핵심] 툴ID가 일치하는 녀석이 있으면 덮어쓰고(Update), 없으면 새로 추가(Insert) 합니다.
-            collection.update_one(
-                {"툴ID": target_id},
-                {"$set": new_row},
-                upsert=True
-            )
-            st.success(f"✅ {target_id} 툴 정보가 데이터베이스에 실시간 저장되었습니다!")
-            st.rerun()
-        except Exception as e:
-            st.error(f"❌ 데이터베이스 저장 실패: {e}")
+        if collection is None:
+            st.error("❌ 현재 데이터베이스에 연결되어 있지 않아 저장할 수 없습니다.")
+        else:
+            new_row = {
+                "툴ID": target_id, 
+                "툴종류": "#200전착" if "20" in target_id else "#400레진", 
+                "상태": tool_status, 
+                "입고날짜": str(in_date), 
+                "장착기계": machine_num, 
+                "가공제품": product_name, 
+                "가공수량": qty
+            }
+            
+            try:
+                collection.update_one(
+                    {"툴ID": target_id},
+                    {"$set": new_row},
+                    upsert=True
+                )
+                st.success(f"✅ {target_id} 툴 정보가 데이터베이스에 실시간 저장되었습니다!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"❌ 데이터베이스 저장 실패: {e}")
 
 # --- 오른쪽: 대망의 검색 및 데이터 시트 현황 조회 ---
 with col2:
@@ -116,9 +129,9 @@ with col2:
         filter_machine = st.selectbox("🤖 기계별 필터", ["전체 보기", "#1호기", "#2호기", "#3호기", "미장착"])
 
     # 2. [검색 로직 작동] 항상 실시간으로 읽어온 current_df를 기반으로 가공
-    filtered_df = current_df.copy()
-    
-    if not filtered_df.empty:
+    if not current_df.empty:
+        filtered_df = current_df.copy()
+        
         if search_keyword:
             filtered_df = filtered_df[
                 filtered_df["툴ID"].str.contains(search_keyword, na=False) | 
@@ -132,9 +145,11 @@ with col2:
         if filter_machine != "전체 보기":
             filtered_df = filtered_df[filtered_df["장착기계"] == filter_machine]
 
-    # 3. 최종 필터링된 결과 테이블 출력
-    st.write(f"📊 검색된 툴 개수: **{len(filtered_df)}**개")
-    st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+        # 3. 최종 필터링된 결과 테이블 출력
+        st.write(f"📊 검색된 툴 개수: **{len(filtered_df)}**개")
+        st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+    else:
+        st.warning("⚠️ 현재 불러올 수 있는 데이터가 없습니다. DB 연결 상태를 확인해 주세요.")
     
     st.info("💡 실시간 동기화 활성화 중: 핸드폰이나 PC 어느 쪽에서 수정하든 최대 5초 이내에 양쪽 화면이 모두 자동 동기화됩니다.")
 
