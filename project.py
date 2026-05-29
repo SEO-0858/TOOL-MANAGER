@@ -18,7 +18,7 @@ st_autorefresh(interval=5000, limit=9999, key="db_sync_counter")
 st.set_page_config(page_title="다이아몬드 툴 관리 시스템", layout="wide")
 
 st.title("🏭 4PART (검색/필터 기능)")
-st.write("사무실 및 현장관리용 (실시간 클라우드 DB 양방향 연동)")
+st.write("사무실 및 현장관리 (실시간 클라우드 DB 양방향 연동)")
 st.markdown("---")
 
 
